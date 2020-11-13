@@ -1,7 +1,7 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect } from "react";
 import Snap from "snapsvg-cjs";
 
-const defaultOpacity = 0.3;
+const defaultOpacity = 0.1;
 
 function coloringPixel(component, color, opacity, strokeWidth){
     component.animate(
@@ -96,12 +96,14 @@ function getPathFromPoints(points){
     return pathString + "Z";
 }
 
-const Superpixel = ({keyId, pixels, imgWidth, annotation, fill, annotatingCallback}) => {
+const Superpixel = ({keyId, pixels, imgWidth, initialAnnotation}) => {
+    const [ annotation, setAnnotation] = useState(initialAnnotation);
+    const idKey = "pixel" + keyId.toString();
     useEffect(() => {
         var s = Snap("#pixel" + keyId.toString());
         var myPathString = getPathFromPoints(pixels.map((element) => {return [element % imgWidth, Math.floor(element / imgWidth)]}));
         var pixel = s.path( myPathString );
-        pixel.attr({ stroke: "red", strokeWidth: 0, fill: fill, opacity: defaultOpacity });
+        pixel.attr({ stroke: "red", strokeWidth: 0, fill: annotation.color, opacity: defaultOpacity });
         pixel.mouseover(function (event) {
             if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
             && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
@@ -111,18 +113,17 @@ const Superpixel = ({keyId, pixels, imgWidth, annotation, fill, annotatingCallba
           .mouseout(function (event) {
             if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
             && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-                coloringPixel(this, fill, defaultOpacity, 0);
+                coloringPixel(this, annotation.color, defaultOpacity, 0);
             }
           })
           .mousemove(function (event) {
               if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
-                && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
+              && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
                 event.target.parentNode.setAttribute("annotation", event.target.parentNode.parentNode.getAttribute("annotating"));
                 coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.8, 0);
               }
           });
     }, []);
-    const idKey = "pixel" + keyId.toString();
     return <svg id={idKey} annotation={annotation.tag}/>;
   };
 
