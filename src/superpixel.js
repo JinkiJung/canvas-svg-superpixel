@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect, useRef} from "react";
 import Snap from "snapsvg-cjs";
 
 const defaultOpacity = 0.3;
@@ -96,63 +96,34 @@ function getPathFromPoints(points){
     return pathString + "Z";
 }
 
-class Superpixel extends React.Component {
-  componentDidMount() {
-    const fill = this.props.fill;
-    const highlight = this.props.highlight;
-    var s = Snap("#pixel" + this.props.keyId.toString());
-    var myPathString = getPathFromPoints(this.props.pixels.map((element) => {return [element % this.props.imgWidth, Math.floor(element / this.props.imgWidth)]}));
-    var pixel = s.path( myPathString );
-    var mouseDown = false;
-    pixel.attr({ stroke: "red", strokeWidth: 0, fill: this.props.fill, opacity: defaultOpacity });
-    pixel
-    /*
-      .mouseover(function (event) {
-        if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
-        && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-            coloringPixel(this, highlight, 0.6, 1);
-        }
-      })
-      .mouseout(function (event) {
-        if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
-        && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-            coloringPixel(this, fill, defaultOpacity, 0);
-        }
-      })
-      .mousemove(function (event) {
-          if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
-        && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-              console.log(this.paper.parent());
-            event.target.parentNode.setAttribute("annotation", 1);
-            coloringPixel(this, highlight, 0.8, 0);
-          }
-      });
-      */
-     .mouseover(function (event) {
-        if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
-        && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-            coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.6, 1);
-        }
-      })
-      .mouseout(function (event) {
-        if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
-        && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-            coloringPixel(this, fill, defaultOpacity, 0);
-        }
-      })
-      .mousemove(function (event) {
-          console.log(event.buttons);
-          if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
+const Superpixel = ({keyId, pixels, imgWidth, annotation, fill, annotatingCallback}) => {
+    useEffect(() => {
+        var s = Snap("#pixel" + keyId.toString());
+        var myPathString = getPathFromPoints(pixels.map((element) => {return [element % imgWidth, Math.floor(element / imgWidth)]}));
+        var pixel = s.path( myPathString );
+        pixel.attr({ stroke: "red", strokeWidth: 0, fill: fill, opacity: defaultOpacity });
+        pixel.mouseover(function (event) {
+            if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
             && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-            event.target.parentNode.setAttribute("annotation", event.target.parentNode.parentNode.getAttribute("annotating"));
-            coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.8, 0);
-          }
-      });
-  }
-  render() {
-    const idKey = "pixel" + this.props.keyId.toString();
-    return <svg style={this.props.style} id={idKey} annotation={this.props.annotation}/>;
-  }
-}
+                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.6, 1);
+            }
+          })
+          .mouseout(function (event) {
+            if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
+            && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
+                coloringPixel(this, fill, defaultOpacity, 0);
+            }
+          })
+          .mousemove(function (event) {
+              if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
+                && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
+                event.target.parentNode.setAttribute("annotation", event.target.parentNode.parentNode.getAttribute("annotating"));
+                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.8, 0);
+              }
+          });
+    }, []);
+    const idKey = "pixel" + keyId.toString();
+    return <svg id={idKey} annotation={annotation.tag}/>;
+  };
 
 export default Superpixel;

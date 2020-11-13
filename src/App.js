@@ -17,7 +17,7 @@ function App() {
       <button onClick={()=>{setAnnotationLabel(4,"green")}}>Green</button></div>
       <div className="img-overlay-wrap">
       <img src="./resource/test.jpg" alt={"test"}/>
-        <CanvasSuperpixel keyId={"mainCanvas"} data={data} width={1024} height={768} annotating={-1} annotatingcolor={""} /> 
+        <CanvasSuperpixel keyId={"mainCanvas"} data={data} width={1024} height={768} annotating={-1} annotatingcolor={""} fill={"black"}/> 
       </div>
     </div>
   );
