@@ -40,7 +40,8 @@ const CanvasSuperpixel = ({
             <Superpixel
               keyId={key}
               pixels={data[key].split(",")}
-              imgWidth={width}
+              canvasWidth={width}
+              canvasHeight={height}
               initialAnnotation={annotating}
               key={key}
               annotating={() => annotating}
