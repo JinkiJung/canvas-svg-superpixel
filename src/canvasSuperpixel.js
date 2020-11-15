@@ -3,26 +3,33 @@ import Superpixel from "./superpixel";
 
 var keys = [];
 
+const getAnnotationData = (key, array, defaultAnnotating) => {
+    for (var e of array) {
+        if (e.index === parseInt(key)) return { tag: e.tag, color: e.color };
+      }
+    return defaultAnnotating;
+  }
+
 const CanvasSuperpixel = ({
   keyId,
   fileName,
-  data,
+  segmentationData,
   width,
   height,
   defaultcolor,
   colorbuttons,
+  annotationData,
 }) => {
   const [annotating, setAnnotating] = useState({
     tag: -1,
     color: defaultcolor,
   });
-  if(keys.length===0)
-    for (var k in data) keys.push(k);
+  if (keys.length === 0) for (var k in segmentationData) keys.push(k);
   const viewBoxString = [0, 0, width, height].join(" ");
-
+  const annotatedIndices = annotationData.map((element) => element.index);
   return (
     <div>
-      <h1 >{annotating.color}</h1>
+      <h1>{annotating.color}</h1>
       <div className="coloring-buttons">
         {colorbuttons.map((color, index) => (
           <button
@@ -35,18 +42,25 @@ const CanvasSuperpixel = ({
       </div>
       <div className="img-overlay-wrap">
         <img src={fileName} alt={"test"} />
-        <svg id={keyId} viewBox={viewBoxString} annotating={annotating.tag} annotatingcolor={annotating.color}>
-          {keys.map((key) => (
-            <Superpixel
+        <svg
+          id={keyId}
+          viewBox={viewBoxString}
+          annotating={annotating.tag}
+          annotatingcolor={annotating.color}
+        >
+          {
+          keys.map((key) => {
+            const initialAnnotation = annotatedIndices.includes(parseInt(key))
+              ? getAnnotationData(key, annotationData, annotating) : annotating;
+            return <Superpixel
               keyId={key}
-              pixels={data[key].split(",")}
+              pixels={segmentationData[key].split(",")}
               canvasWidth={width}
               canvasHeight={height}
-              initialAnnotation={annotating}
+              initialAnnotation={initialAnnotation}
               key={key}
-              annotating={() => annotating}
-            />
-          ))}
+            />;
+          })}
         </svg>
       </div>
     </div>

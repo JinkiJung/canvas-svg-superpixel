@@ -1,7 +1,9 @@
-import React, {useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import Snap from "snapsvg-cjs";
 
 const defaultOpacity = 0.1;
+const annotatedOpacity = 0.7;
+const annotatingOpacity = 0.9;
 
 function coloringPixel(component, color, opacity, strokeWidth){
     component.animate(
@@ -61,7 +63,6 @@ function convert2Point(index, gridWidth){
 
 function stepForward(currentPoint, direction, pathString, gridWidth){
     let newPoint = moveAlongDirection(currentPoint, direction, gridWidth);
-    //console.log(convert2Point(newPoint, canvasWidth));
     let newPathString = pathString + "L "+ convert2Point(newPoint, gridWidth).join(" ")+" ";
     return [ newPathString,  newPoint ];
 }
@@ -78,25 +79,25 @@ function getPathFromPoints(points, canvasWidth, canvasHeight){
     var count = 0;
     var coordinates = {gridWidth: gridWidth, gridHeight: gridHeight, canvasWidth: canvasWidth, canvasHeight: canvasHeight};
     do{
-        if (traverseDirection === Direction.RIGHT && checkMembership(points, addOffset(currentPoint, [0, -1], gridWidth), coordinates)){//points.includes(currentPoint)){
+        if (traverseDirection === Direction.RIGHT && checkMembership(points, addOffset(currentPoint, [0, -1], gridWidth), coordinates)){
             traverseDirection = (traverseDirection + 3 ) % 4;
             [ pathString, currentPoint ] = stepForward(currentPoint, traverseDirection, pathString, gridWidth);
-        } else if (traverseDirection === Direction.RIGHT && checkMembership(points, currentPoint, coordinates)){//points.includes(currentPoint)){
+        } else if (traverseDirection === Direction.RIGHT && checkMembership(points, currentPoint, coordinates)){
             [ pathString, currentPoint ] = stepForward(currentPoint, Direction.RIGHT, pathString, gridWidth);
-        } else if (traverseDirection === Direction.DOWN && checkMembership(points, currentPoint, coordinates)){//points.includes(currentPoint)){
+        } else if (traverseDirection === Direction.DOWN && checkMembership(points, currentPoint, coordinates)){
             traverseDirection = (traverseDirection + 3 ) % 4;
             [ pathString, currentPoint ] = stepForward(currentPoint, traverseDirection, pathString, gridWidth);
-        } else if (traverseDirection === Direction.DOWN && checkMembership(points, addOffset(currentPoint, [-1, 0], gridWidth), coordinates)){ //points.includes(addOffset(currentPoint, [-1, 0]))){
+        } else if (traverseDirection === Direction.DOWN && checkMembership(points, addOffset(currentPoint, [-1, 0], gridWidth), coordinates)){ 
             [ pathString, currentPoint ] = stepForward(currentPoint, Direction.DOWN, pathString, gridWidth);
-        } else if (traverseDirection === Direction.LEFT && checkMembership(points, addOffset(currentPoint, [-1, 0], gridWidth), coordinates)){ //points.includes(addOffset(currentPoint, [-1, 0]))){
+        } else if (traverseDirection === Direction.LEFT && checkMembership(points, addOffset(currentPoint, [-1, 0], gridWidth), coordinates)){ 
             traverseDirection = (traverseDirection + 3 ) % 4;
             [ pathString, currentPoint ] = stepForward(currentPoint, traverseDirection, pathString, gridWidth);
-        } else if (traverseDirection === Direction.LEFT && checkMembership(points, addOffset(currentPoint, [-1, -1], gridWidth), coordinates)){ //points.includes(addOffset(currentPoint, [-1, -1]))){
+        } else if (traverseDirection === Direction.LEFT && checkMembership(points, addOffset(currentPoint, [-1, -1], gridWidth), coordinates)){ 
             [ pathString, currentPoint ] = stepForward(currentPoint, Direction.LEFT, pathString, gridWidth);
-        } else if (traverseDirection === Direction.UP && checkMembership(points, addOffset(currentPoint, [-1, -1], gridWidth), coordinates)){ //points.includes(addOffset(currentPoint, [-1, -1]))){
+        } else if (traverseDirection === Direction.UP && checkMembership(points, addOffset(currentPoint, [-1, -1], gridWidth), coordinates)){ 
             traverseDirection = (traverseDirection + 3 ) % 4;
             [ pathString, currentPoint ] = stepForward(currentPoint, traverseDirection, pathString, gridWidth);
-        } else if (traverseDirection === Direction.UP && checkMembership(points, addOffset(currentPoint, [0, -1], gridWidth), coordinates)){ //points.includes(addOffset(currentPoint, [0, -1]))){
+        } else if (traverseDirection === Direction.UP && checkMembership(points, addOffset(currentPoint, [0, -1], gridWidth), coordinates)){ 
             [ pathString, currentPoint ] = stepForward(currentPoint, Direction.UP, pathString, gridWidth);
         } else {
             traverseDirection = (traverseDirection + 1 ) % 4;
@@ -107,34 +108,33 @@ function getPathFromPoints(points, canvasWidth, canvasHeight){
 }
 
 const Superpixel = ({keyId, pixels, canvasWidth, canvasHeight, initialAnnotation}) => {
-    const [ annotation, setAnnotation] = useState(initialAnnotation);
     const idKey = "pixel" + keyId.toString();
     useEffect(() => {
         var s = Snap("#pixel" + keyId.toString());
         var myPathString = getPathFromPoints(pixels, canvasWidth, canvasHeight);
         var pixel = s.path( myPathString );
-        pixel.attr({ stroke: "red", strokeWidth: 0, fill: annotation.color, opacity: defaultOpacity });
+        pixel.attr({ stroke: "red", strokeWidth: 0, fill: initialAnnotation.color, opacity: initialAnnotation.tag < 0 ? defaultOpacity : annotatedOpacity });
         pixel.mouseover(function (event) {
             if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
             && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.6, 1);
+                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), annotatingOpacity, 1);
             }
           })
           .mouseout(function (event) {
             if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
             && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-                coloringPixel(this, annotation.color, defaultOpacity, 0);
+                coloringPixel(this, initialAnnotation.color, defaultOpacity, 0);
             }
           })
           .mousemove(function (event) {
               if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
               && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
                 event.target.parentNode.setAttribute("annotation", event.target.parentNode.parentNode.getAttribute("annotating"));
-                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), 0.8, 0);
+                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), annotatedOpacity, 0);
               }
           });
     }, []);
-    return <svg id={idKey} annotation={annotation.tag}/>;
+    return <svg id={idKey} annotation={initialAnnotation.tag}/>;
   };
 
 export default Superpixel;
