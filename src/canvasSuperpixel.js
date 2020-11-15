@@ -10,6 +10,12 @@ const getAnnotationData = (key, array, defaultAnnotating) => {
     return defaultAnnotating;
   }
 
+const updateAnnotating = (keyId, tag, color) => {
+    //setAnnotating({ tag: index, color: color }); // computationally intensive requiring re-rendering
+    document.getElementById(keyId).setAttribute("annotating", tag);
+    document.getElementById(keyId).setAttribute("annotatingcolor", color);
+}
+
 const CanvasSuperpixel = ({
   keyId,
   fileName,
@@ -20,7 +26,7 @@ const CanvasSuperpixel = ({
   colorbuttons,
   annotationData,
 }) => {
-  const [annotating, setAnnotating] = useState({
+  const [ annotating ] = useState({
     tag: -1,
     color: defaultcolor,
   });
@@ -29,12 +35,11 @@ const CanvasSuperpixel = ({
   const annotatedIndices = annotationData.map((element) => element.index);
   return (
     <div>
-      <h1>{annotating.color}</h1>
       <div className="coloring-buttons">
-        {colorbuttons.map((color, index) => (
+        {colorbuttons.map((color, tag) => (
           <button
-            key={index}
-            onClick={() => setAnnotating({ tag: index, color: color })}
+            key={tag}
+            onClick={() => updateAnnotating(keyId, tag, color)}
           >
             {color}
           </button>
