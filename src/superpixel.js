@@ -51,7 +51,7 @@ function moveAlongDirection(point, direction, gridWidth){
 }
 
 function checkMembership(points, gridPoint, coordinates){
-    if(gridPoint % coordinates.gridWidth === coordinates.canvasWidth || Math.floor(gridPoint / coordinates.gridHeight) === coordinates.canvasHeight) // exclude grid edges
+    if(gridPoint < 0 || gridPoint % coordinates.gridWidth >= coordinates.canvasWidth || Math.floor(gridPoint / coordinates.gridWidth) >= coordinates.canvasHeight) // exclude grid edges
         return false;
     else
         return points.includes(String(convertGrid2Img(gridPoint, coordinates.gridWidth, coordinates.canvasWidth)));
@@ -78,7 +78,7 @@ function getPathFromPoints(points, canvasWidth, canvasHeight){
     var traverseDirection = Direction.RIGHT;
     var count = 0;
     var coordinates = {gridWidth: gridWidth, gridHeight: gridHeight, canvasWidth: canvasWidth, canvasHeight: canvasHeight};
-    do{
+    do{       
         if (traverseDirection === Direction.RIGHT && checkMembership(points, addOffset(currentPoint, [0, -1], gridWidth), coordinates)){
             traverseDirection = (traverseDirection + 3 ) % 4;
             [ pathString, currentPoint ] = stepForward(currentPoint, traverseDirection, pathString, gridWidth);
@@ -112,12 +112,8 @@ const Superpixel = ({keyId, pixels, canvasWidth, canvasHeight, initialAnnotation
     const idKey = "pixel" + keyId.toString();
     useEffect(() => {
         var s = Snap("#pixel" + keyId.toString());
-        var myPathString = getPathFromPoints(pixels, canvasWidth, canvasHeight);
-        if(keyId === "2350" || keyId === "2351")
-        {
-            console.log(myPathString);
-        }
-        var pixel = s.path( myPathString );
+        var pathString = getPathFromPoints(pixels, canvasWidth, canvasHeight, keyId);
+        var pixel = s.path( pathString );
         pixel.attr({ stroke: "red", strokeWidth: 0, fill: annotation.color, opacity: annotation.tag < 0 ? defaultOpacity : annotatedOpacity });
         pixel.mouseover(function (event) {
             if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
