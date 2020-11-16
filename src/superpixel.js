@@ -112,29 +112,32 @@ const Superpixel = ({keyId, pixels, canvasWidth, canvasHeight, initialAnnotation
     const idKey = "pixel" + keyId.toString();
     useEffect(() => {
         var s = Snap("#pixel" + keyId.toString());
-        var pathString = getPathFromPoints(pixels, canvasWidth, canvasHeight, keyId);
-        var pixel = s.path( pathString );
-        pixel.attr({ stroke: "red", strokeWidth: 0, fill: annotation.color, opacity: annotation.tag < 0 ? defaultOpacity : annotatedOpacity });
-        pixel.mouseover(function (event) {
-            if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
-            && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-                //console.log(keyId);
-                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), annotatingOpacity, 1);
-            }
-          })
-          .mouseout(function (event) {
-            if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
-            && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-                coloringPixel(this, annotation.color, defaultOpacity, 0);
-            }
-          })
-          .mousemove(function (event) {
-              if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
-              && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
-                event.target.parentNode.setAttribute("annotation", event.target.parentNode.parentNode.getAttribute("annotating"));
-                coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), annotatedOpacity, 0);
-              }
-          });
+        if(s.children().length <= 2){ // must be updated to check the inclusion of 'path' within children
+            var pathString = getPathFromPoints(pixels, canvasWidth, canvasHeight, keyId);
+            var pixel = s.path( pathString );
+            pixel.attr({ stroke: "white", strokeWidth: 0, fill: annotation.color, opacity: annotation.tag < 0 ? defaultOpacity : annotatedOpacity });
+            pixel.mouseover(function (event) {
+                if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0 
+                && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
+                    //console.log(keyId);
+                    coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), annotatingOpacity, 1);
+                }
+              })
+              .mouseout(function (event) {
+                if (event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation") < 0
+                && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
+                    coloringPixel(this, annotation.color, defaultOpacity, 0);
+                }
+              })
+              .mousemove(function (event) {
+                  if (event.buttons === 1 && event.target.parentNode.nodeName === "svg" && event.target.parentNode.getAttribute("annotation")
+                  && event.target.parentNode.parentNode.nodeName === "svg" && event.target.parentNode.parentNode.getAttribute("annotating")>=0) {
+                    event.target.parentNode.setAttribute("annotation", event.target.parentNode.parentNode.getAttribute("annotating"));
+                    coloringPixel(this, event.target.parentNode.parentNode.getAttribute("annotatingcolor"), annotatedOpacity, 0);
+                  }
+              });
+        }
+        
     }, [canvasWidth, canvasHeight]);
     return <svg id={idKey} annotation={annotation.tag}/>;
   };
