@@ -46,7 +46,7 @@ const CanvasSuperpixel = ({
         ))}
       </div>
       <div className="img-overlay-wrap">
-        <img src={fileName} alt={"test"} />
+        <img src={fileName} width={width} height={height} alt={"test"} />
         <svg
           id={keyId}
           viewBox={viewBoxString}
