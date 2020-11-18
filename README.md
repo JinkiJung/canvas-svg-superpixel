@@ -1,5 +1,7 @@
-# Getting Started with Create React App
+# Canvas-svg-superpixel
 
+This is a React project for representing superpixels on an image based on Snap.svg. 
+The inspiration was an optimized reprentation of set of pixels using path element like [this article](https://codepen.io/shshaw/post/vector-pixels-svg-optimization-animation-and-understanding-path-data).
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
