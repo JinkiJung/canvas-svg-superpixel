@@ -113,7 +113,7 @@ const Superpixel = ({keyId, pixels, canvasWidth, canvasHeight, initialAnnotation
     useEffect(() => {
         var s = Snap("#pixel" + keyId.toString());
         if(s.children().length <= 2){ // must be updated to check the inclusion of 'path' within children
-            var pathString = getPathFromPoints(pixels, canvasWidth, canvasHeight, keyId);
+            var pathString = getPathFromPoints(pixels, canvasWidth, canvasHeight);
             var pixel = s.path( pathString );
             pixel.attr({ stroke: "white", strokeWidth: 0, fill: annotation.color, opacity: annotation.tag < 0 ? defaultOpacity : annotatedOpacity });
             pixel.mouseover(function (event) {
